@@ -9,24 +9,30 @@
 <body>
     <a-scene>
         <a-sky color="skyblue"></a-sky>
-        <a-plane rotation="-90 0 0" height="10" width="10" color=green></a-plane>
-        <a-assets>
-            <img src="/assets/images/brick.jpg" id="brick" alt="">
-        </a-assets>
-        <a-entity id="flowerbox">
-            <a-box postion="0 1 0" width="3" material="src:#brick"></a-box>
-            <a-plane position="0 0.5 0" rotation="-90 0 0" hight="9.5" width=3 color="brown"></a-plane>
-            <a-entity id="flower">
-                <a-cylinder position="1 1 0" radius="0.1" color="green"></a-cylinder>
-                <a-cone position="1 1.5 0" rotation="180 0 0" height="0.5" radius-bottom="0.6" color="red"></a-cone>
-                <a-sphere position="1 1.8 0" radius="0.3" color="yellow"></a-sphere>
-            </a-entity>
-            <a-entity id="flower" position="-2 0 0">
-                <a-cylinder position="1 1 0" radius="0.1" color="green"></a-cylinder>
-                <a-cone position="1 1.5 0" rotation="180 0 0" height="0.5" radius-bottom="0.6" color="red"></a-cone>
-                <a-sphere position="1 1.8 0" radius="0.3" color="yellow"></a-sphere>
-            </a-entity>
+        <a-plane rotation="-90 0 0" color="green" height="10" width="10"></a-plane>
+        <a-entity id="snowman" position="0 0.8 0">
+            <a-sphere position="0 1.5 0" color="white" radius="0.7"></a-sphere>
+            <a-sphere position="0 0 0" color="white" ></a-sphere>
+            <a-box position="0 1.2 0.3" height="0.1" width="0.6" color="black"></a-box>
+            <a-sphere position="0.2 1.5 0.7" radius="0.1" color="black"></a-sphere>
+            <a-sphere position="-0.2 1.5 0.7" radius="0.1" color="black"></a-sphere>  
+            <a-cone position="0 1 0" color="red"></a-cone> 
+            <a-cone position="0 2.28 0" radius-bottom = 0.5 radius-top="0.3" height="0.5" color="yellow"></a-cone>     
         </a-entity>
+        <a-entity id="dorm">
+            <a-cylinder height="0.3" radius="4" color="white"></a-cylinder>
+            <a-sphere radius="4" material="opacity:0.5"></a-sphere>
+        </a-entity>
+        <a-entity id="wood" position="1.5 0 2">
+            <a-cylinder position="0 0 0" radius="0.2" height="1.5" color="brown"></a-cylinder>
+            <a-sphere position="0 1.5 0" color="green" radius="1" scale="0.5 1 0.5"></a-sphere>
+        </a-entity>
+        <a-entity id="wood" position="-1.5 0 -2">
+            <a-cylinder position="0 0 0" radius="0.3" height="1.5" color="brown"></a-cylinder>
+            <a-sphere position="0 1.5 0" color="green" radius="1"></a-sphere>
+        </a-entity>
+        
+        
 
         <a-camera
         position="0 2 6"
