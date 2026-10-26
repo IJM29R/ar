@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.7/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.5.4/dist/aframe-extras.min.js"></script>
+
+    <style>
+        #hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 999;
+        }
+
+        button {
+            font-size: 20px;
+            padding: 12px 20px;
+            border: none;
+            background-color: royalblue;
+            color: white;
+            border-radius: 10px;
+            margin-right: 10px;
+        }
+
+        select {
+            font-size: 18px;
+            padding: 10px 12px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="hud">
+        <select id="animationSelect">
+            <option value="SpiderArmature|Spider_Walk" selected>Walk</option>
+            <option value="SpiderArmature|Spider_Attack">Attack</option>
+            <option value="SpiderArmature|Spider_Death">Death</option>
+        </select>
+        <button id="enlargeButton">Enlarge</button>
+        <button id="reductionButton">Reduction</button>
+        <button id="rotateButton">Rotate</button>
+        <button id="reverseRotateButton">ReverseRotate</button>
+        
+    </div> 
+    <a-scene embedded arjs="sourceType: webcam">
+        <a-marker preset="hiro" smooth="true">
+            <a-entity id="MODEL" position="0 0 0.5">
+                <a-gltf-model id="model" src="spider.glb" position="0 0 0" scale="0.5 0.5 0.5" rotation="270 0 0"
+                    animation-mixer="clip:SpiderArmature|Spider_Walk"></a-gltf-model>
+            </a-entity>
+        </a-marker>
+
+        <a-entity camera></a-entity>
+    </a-scene>
+
+    <script>
+        /*This model's animation list 
+         
+        Hu {name: 'SpiderArmature|Spider_Attack', tracks: Array(37), duration: 0.75, blendMode: 2500, uuid: 'f63929fe-8aa9-4c3b-bb13-5439c51ffb28'}
+        
+        Hu {name: 'SpiderArmature|Spider_Death', tracks: Array(37), duration: 1.0416666269302368, blendMode: 2500, uuid: '0b23f6d3-1d20-4dc0-8100-da6555bdacb4'}
+        
+        Hu {name: 'SpiderArmature|Spider_Idle', tracks: Array(34), duration: 4.166666507720947, blendMode: 2500, uuid: 'e9f3b98f-9a01-402e-af4a-7b85bf8bbea6'}
+        
+        Hu {name: 'SpiderArmature|Spider_Jump', tracks: Array(36), duration: 0.7083333134651184, blendMode: 2500, uuid: 'f8b59879-9294-43f2-84ed-a09d85fb0b65'}
+
+        Hu {name: 'SpiderArmature|Spider_Walk', tracks: Array(36), duration: 0.8333333134651184, blendMode: 2500, uuid: 'ce44f94a-8eb3-4b99-8e01-7ca59f7505d3'}
+        */
+        const model = document.getElementById("model");
+
+        const animationSelect = document.getElementById("animationSelect")
+
+        const MODEL = document.getElementById("MODEL")
+        const enlargeButton = document.getElementById("enlargeButton")
+        const reductionButton = document.getElementById("reductionButton")
+        const rotateButton = document.getElementById("rotateButton")
+        const reverseRotateButton = document.getElementById("reverseRotateButton")
+
+        let size = 1;
+
+        function enlargeModel(){
+            size = size + 0.1;
+            MODEL.setAttribute("scale",`${size} ${size} ${size}`);
+        }
+
+        enlargeButton.addEventListener("click",enlargeModel)
+
+        function reductionModel(){
+            size = size - 0.1;
+            MODEL.setAttribute("scale",`${size} ${size} ${size}`)
+        }
+
+        reductionButton.addEventListener("click",reductionModel)
+
+        let angle = 0;
+        function rotateModel(){
+            angle += 15;
+            MODEL.setAttribute("rotation",`0 0 ${angle}`);
+        }
+
+        rotateButton.addEventListener("click",rotateModel);
+        
+        function reverseRotateModel(){
+            angle = angle - 15;
+            MODEL.setAttribute("rotation",`0 0 ${angle}`)
+        }
+
+        reverseRotateButton.addEventListener("click",reverseRotateModel);
+
+        function changeAnimation() {
+            model.setAttribute("animation-mixer", "clip", animationSelect.value);
+        }
+
+        animationSelect.addEventListener("change", changeAnimation);
+    </script>
+</body>
+
+</html>
