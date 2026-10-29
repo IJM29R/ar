@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.7/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.5.4/dist/aframe-extras.min.js"></script>
+
+    <style>
+        #hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 999;
+        }
+
+        #display {
+            position: fixed;
+            top: 60px;
+            left: 270px;
+            z-index: 999;
+            background-color: gray;
+        }
+            #displayText{
+                color: white;
+                font-size: 30px;
+                margin-right: 20px;
+                margin-left: 20px;
+            }
+    </style>
+</head>
+
+<body>
+    <div class="containts">
+        <div id="hud">
+            <p>ROBOT HP:<span id="modelHpText">50</span></p>
+            <progress id="modelHpBar" max="50" value="50"></progress>
+            <p>PLAYER HP:<span id="playerHpText">100</span></p>
+            <progress id="playerHpBar" max="100" value="100"></progress>
+        </div>
+        <div id="display">
+            <p id="displayText"></p>
+        </div>
+    </div>
+
+    <a-scene embedded arjs="sourceType: webcam" cursor="rayOrigin: mouse" raycaster="objects: .clickable">
+        <a-marker preset="hiro" smooth="true">
+            <a-entity id="MODEL" position="0 0 0.5">
+                <a-gltf-model id="model" class="clickable" src="robot.glb" position="0 0 0" scale="0.5 0.5 0.5"
+                    rotation="270 0 0" animation-mixer="clip:RobotArmature|Robot_Idle"></a-gltf-model>
+            </a-entity>
+        </a-marker>
+
+        <a-entity camera></a-entity>
+    </a-scene>
+
+    <script>
+        /*animations
+Hu {name: 'RobotArmature|Robot_Dance', tracks: Array(10), duration: 3.3333332538604736, blendMode: 2500, uuid: '0b69eceb-b0c4-4f73-ad38-100a163cdd2d'}
+
+Hu {name: 'RobotArmature|Robot_Death', tracks: Array(17), duration: 0.9583333134651184, blendMode: 2500, uuid: '1b95d0cc-9420-49b9-9014-c1ba756f998f'}
+
+Hu {name: 'RobotArmature|Robot_Idle', tracks: Array(6), duration: 3.3333332538604736, blendMode: 2500, uuid: '0dd5448b-f6e0-4040-9455-0b1c449ee25f'}
+
+Hu {name: 'RobotArmature|Robot_Jump', tracks: Array(17), duration: 0.7083333134651184, blendMode: 2500, uuid: '4ced6d79-8f5c-4bbc-b1d4-efe31318d09f'}
+
+Hu {name: 'RobotArmature|Robot_No', tracks: Array(6), duration: 1.6666666269302368, blendMode: 2500, uuid: 'feae8c42-5e78-4c94-9849-50d3854a636f'}
+
+Hu {name: 'RobotArmature|Robot_Punch', tracks: Array(14), duration: 0.8333333134651184, blendMode: 2500, uuid: '6356b0ad-7761-4a79-9596-709e1e752be9'}
+
+Hu {name: 'RobotArmature|Robot_Running', tracks: Array(17), duration: 0.9583333134651184, blendMode: 2500, uuid: 'ce135ffd-1868-4f24-9043-163f174fcd0d'}
+ 
+Hu {name: 'RobotArmature|Robot_Sitting', tracks: Array(8), duration: 0.4166666567325592, blendMode: 2500, uuid: 'f0d7d325-ffb0-489b-b797-a87d2b8cde61'}
+ 
+Hu {name: 'RobotArmature|Robot_Standing', tracks: Array(8), duration: 0.4166666567325592, blendMode: 2500, uuid: 'de78d887-00f5-4700-b859-1408bb253887'}
+ 
+Hu {name: 'RobotArmature|Robot_ThumbsUp', tracks: Array(14), duration: 1.5833333730697632, blendMode: 2500, uuid: 'ce1bb5e4-c1ee-4037-b9c1-c03afbeb05a5'}
+
+Hu {name: 'RobotArmature|Robot_Walking', tracks: Array(19), duration: 0.9583333134651184, blendMode: 2500, uuid: 'fe2d3767-6d7c-4fc0-9186-9f5950cbcfd0'}
+ 
+Hu {name: 'RobotArmature|Robot_WalkJump', tracks: Array(17), duration: 0.8333333134651184, blendMode: 2500, uuid: 'cd7eedd0-7391-4e79-90a1-f58fc640265c'}
+ 
+Hu {name: 'RobotArmature|Robot_Wave', tracks: Array(17), duration: 1.8333333730697632, blendMode: 2500, uuid: '693b85a4-7ce4-4bcb-8e6b-9be815e11cdc'}
+ 
+Hu {name: 'RobotArmature|Robot_Yes', tracks: Array(6), duration: 1.6666666269302368, blendMode: 2500, uuid: '98ef0b64-cf0f-470c-9dba-79de5d2d1ba9'}
+*/
+        const model = document.getElementById("model");
+        const MODEL = document.getElementById("MODEL");
+        const modelHpText = document.getElementById("modelHpText");
+        const modelHpBar = document.getElementById("modelHpBar");
+        const playerHpText = document.getElementById("playerHpText");
+        const playerHpBar = document.getElementById("playerHpBar");
+        const displayText = document.getElementById("displayText");
+
+
+        const animations = {
+            "Dance": "RobotArmature|Robot_Dance",
+            "Death": "RobotArmature|Robot_Death",
+            "Idle": "RobotArmature|Robot_Idle",
+            "Jump": "RobotArmature|Robot_Jump",
+            "No": "RobotArmature|Robot_No",
+            "Punch": "RobotArmature|Robot_Punch",
+            "Running": "RobotArmature|Robot_Running",
+            "Sitting": "RobotArmature|Robot_Sitting",
+            "Standing": "RobotArmature|Robot_Standing",
+            "ThumbsUp": "RobotArmature|Robot_ThumbsUp",
+            "Walking": "RobotArmature|Robot_Walking",
+            "WalkJump": "RobotArmature|Robot_WalkJump",
+            "Wave": "RobotArmature|Robot_Wave",
+            "Yes": "RobotArmature|Robot_Yes",
+        }
+        function modelAnimation(animation) {
+            model.setAttribute("animation-mixer", "clip", animations[animation]);
+        }
+
+        let modelHp;
+        let playerHp;
+        let playerWin;
+        let damage = 0;
+        function attack() {
+            if (modelHp === 0) {
+                return;
+            }
+
+            damage = Math.floor(Math.random() * 10 + 1) + 5;
+            modelHp -= damage;
+
+            if (modelHp < 0) {
+                modelHp = 0;
+            }
+
+            modelHpText.textContent = modelHp;
+            modelHpBar.value = modelHp;
+            if (modelHp === 0) {
+                deathAnimation();
+                playerWin = true;
+            } else {
+                hitAnimation();
+            }
+        }
+
+        function enemyAttack() {
+            if (playerHp === 0) {
+                return;
+            }
+
+            attackAnimation();
+            damage = Math.floor(Math.random() * 10 + 1);
+            playerHp -= damage;
+
+            if (playerHp < 0) {
+                playerHp = 0;
+            }
+
+            playerHpText.textContent = playerHp;
+            playerHpBar.value = playerHp;
+            if (playerHp <= 0) {
+                //playerDeath();
+                playerWin = false;
+            }
+        }
+
+        function viewDisplay(text){
+            displayText.textContent = text;
+        }
+
+        function judgResult(){
+            if(playerWin === true){
+                viewDisplay("Victory!")
+            }else if(playerWin === false){
+                viewDisplay("Defeat..")
+            }
+        }
+
+        function hitAnimation() {
+            model.removeAttribute("animation-mixer");
+            model.setAttribute(
+                "animation-mixer",
+                {
+                    clip: animations["Jump"],
+                    loop: "once",
+                });
+        }
+
+        function attackAnimation() {
+            model.removeAttribute("animation-mixer");
+            model.setAttribute(
+                "animation-mixer",
+                {
+                    clip: animations["Punch"],
+                    loop: "once",
+                });
+        }
+
+        function idleAnimation() {
+            model.removeAttribute("animation-mixer");
+            model.setAttribute(
+                "animation-mixer",
+                {
+                    clip: animations["Idle"],
+                    loop: true,
+                });
+        }
+
+        function deathAnimation() {
+            model.removeAttribute("animation-mixer");
+            model.setAttribute(
+                "animation-mixer",
+                {
+                    clip: animations["Death"],
+                    loop: "once",
+                    clampWhenFinished: true
+                });
+        }
+
+        function timeInterval() {
+            var ms = 1000
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        modelHp = 50;
+        playerHp = 100;
+        async function main() {
+            if (playerWin !== undefined) {
+                return;
+            }
+
+            await viewDisplay("playerの攻撃！")
+            await timeInterval();
+            await attack();
+            await viewDisplay(damage + "与えた！")
+
+            await timeInterval();
+
+            if (modelHp <= 0) {
+                judgResult()
+                return;
+            }
+
+            await viewDisplay("敵の攻撃！")
+            await timeInterval();
+            await enemyAttack();
+            await viewDisplay(damage + "食らった..")
+
+            await timeInterval();
+
+            if (modelHp <= 0) {
+                judgResult();
+                return;
+            }
+
+            await idleAnimation();
+
+            await judgResult();
+        }
+
+        model.addEventListener("click", main);
+    </script>
+</body>
+
+</html>
