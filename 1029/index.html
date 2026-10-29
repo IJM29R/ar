@@ -18,15 +18,17 @@
 
         #display {
             position: fixed;
-            top: 60px;
+            width: 220px;
+            height: 110px;
+            top: 50px;
             left: 270px;
             z-index: 999;
-            background-color: gray;
+            background-color: black;
         }
             #displayText{
                 color: white;
-                font-size: 30px;
-                margin-right: 20px;
+                font-size: 27px;
+                margin-right: 10px;
                 margin-left: 20px;
             }
     </style>
@@ -37,7 +39,7 @@
         <div id="hud">
             <p>ROBOT HP:<span id="modelHpText">50</span></p>
             <progress id="modelHpBar" max="50" value="50"></progress>
-            <p>PLAYER HP:<span id="playerHpText">100</span></p>
+            <p>PLAYER HP:<span id="playerHpText">70</span></p>
             <progress id="playerHpBar" max="100" value="100"></progress>
         </div>
         <div id="display">
@@ -124,7 +126,7 @@ Hu {name: 'RobotArmature|Robot_Yes', tracks: Array(6), duration: 1.6666666269302
                 return;
             }
 
-            damage = Math.floor(Math.random() * 10 + 1) + 5;
+            damage = Math.floor(Math.random() * 10 + 1) + 3;
             modelHp -= damage;
 
             if (modelHp < 0) {
@@ -147,7 +149,7 @@ Hu {name: 'RobotArmature|Robot_Yes', tracks: Array(6), duration: 1.6666666269302
             }
 
             attackAnimation();
-            damage = Math.floor(Math.random() * 10 + 1);
+            damage = Math.floor(Math.random() * 10 + 1) + 5;
             playerHp -= damage;
 
             if (playerHp < 0) {
@@ -221,7 +223,7 @@ Hu {name: 'RobotArmature|Robot_Yes', tracks: Array(6), duration: 1.6666666269302
         }
 
         modelHp = 50;
-        playerHp = 100;
+        playerHp = 70;
         async function main() {
             if (playerWin !== undefined) {
                 return;
