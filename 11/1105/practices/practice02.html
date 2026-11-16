@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe-master.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.6.0/dist/aframe-extras.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/projapayuri/aframe-gesture-hands@v0.9.2/aframe-gesture-hands.js"></script>
+
+    <style>
+        .hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 999;
+        }
+
+        p {
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hud">
+        <p>HP:<span id="hpText-right"></span></p>
+        <progress id="hpBar-right" max="" value=""></progress>
+        <p>HP:<span id="hpText-left"></span></p>
+        <progress id="hpBar-left" max="" value=""></progress>
+    </div>
+    <a-scene hands id="scene">
+        <a-gltf-model id="model-right" animation-mixer="clip: MagicCircle_Loop" src="../../../assets/glbs/c_cyan.glb"
+            position="1.5 0.4 -3" scale="2 2 2" rotation="90 0 0"></a-gltf-model>
+        <a-gltf-model id="model-left" animation-mixer="clip: MagicCircle_Loop" src="../../../assets/glbs/c_cyan.glb"
+            position="-1.5 0.4 -3" scale="2 2 2" rotation="90 0 0"></a-gltf-model>
+
+        <a-entity hand-anchor="index:8">
+            <a-gltf-model id="cursor" src="../../../assets/glbs/cursor.glb" scale="0.07 0.07 0.07"
+                position="0.15 -0.2 0.1" rotation="0 0 35"></a-gltf-model>
+        </a-entity>
+
+        <a-plane id="torightOrleftPanel" color="green" opacit="0.8" width="0.85" height="0.35" rotation="10 0 0"
+            position="-0.9 1.3 -2"></a-plane>
+        <a-text id="rightOrleftText" value="Right" position="-0.9 1.3 -1.95" rotation="-10 0 0" align="center"></a-text>
+
+        <a-plane id="toBattlePanel" color="black" opacit="0.8" width="0.9" height="0.35" rotation="10 0 0"
+            position="0.3 1.3 -2"></a-plane>
+        <a-text value="Battle" position="0.3 1.3 -1.95" rotation="-10 0 0" align="center"></a-text>
+
+        <a-plane id="goldPanel" color="gold" opacity="0.8" width="0.9" height="0.35" rotation="-10 0 0"
+            position="0.3 -0.8 -2"></a-plane>
+        <a-text value="Gold" position="0.3 -0.8 -2" rotation="-10 0 0" align="center"></a-text>
+
+        <a-plane id="cyanPanel" color="cyan" opacity="0.8" width="0.9" height="0.35" rotation="-10 0 0"
+            position="-0.9 -0.8 -2"></a-plane>
+        <a-text value="Cyan" position="-0.9 -0.8 -2" rotation="-10 0 0" align="center"></a-text>
+
+        <a-plane id="summonPanel" color="gray" opacity="0.8" width="0.4" height="0.35" rotation="-10 0 0"
+            position="1.2 -0.8 -2"></a-plane>
+        <a-gltf-model id="model-icon1" src="../../../assets/glbs/c_cyan.glb" position="1.2 -0.8 -1.99"
+            scale="0.4 0.4 0.4" rotation="80 0 0"></a-gltf-model>
+        <a-plane id="reverseSummonPanel" color="red" opacity="0.8" width="0.4" height="0.35" rotation="-10 0 0"
+            position="1.7 -0.8 -2"></a-plane>
+        <a-gltf-model id="model-icon2" src="../../../assets/glbs/c_cyan.glb" position="1.7 -0.8 -1.99"
+            scale="0.4 0.4 0.4" rotation="80 0 0"></a-gltf-model>
+        <a-text value="/" position="1.69 -0.78 -1.98" rotation="-10 0 0" align="center" scale="3 2 2"
+            color="red"></a-text>
+    </a-scene>
+    <a-camera positon="0 0 0"></a-camera>
+
+    <script>
+        const scene = document.getElementById("scene")
+        const model_right = document.getElementById("model-right")
+        const model_left = document.getElementById("model-left")
+        const torightOrleftPanel = document.getElementById("torightOrleftPanel")
+        const rightOrleftText = document.getElementById("rightOrleftText")
+        const toBattlePanel = document.getElementById("toBattlePanel")
+        const goldPanel = document.getElementById("goldPanel")
+        const cyanPanel = document.getElementById("cyanPanel")
+        const summonPanel = document.getElementById("summonPanel");
+        const reverseSummonPanel = document.getElementById("reverseSummonPanel")
+        let summoned = false;
+        let summonedName_right = "Robot";
+        let summonedName_left = "Robot";
+
+        const goldUrl = "../../../assets/glbs/c_gold.glb"
+        const cyanUrl = "../../../assets/glbs/c_cyan.glb"
+
+        let right = true;
+
+        let summonedModel_right = "";
+        let summonedModel_left = "";
+
+        let wasGoldInside = false;
+        function toGold() {
+            const inside = scene.components.hands.isPointOnEntity(8, goldPanel);
+
+            if (summoned) return;
+
+            if (inside && wasGoldInside) {
+
+                if (right) {
+                    model_right.setAttribute("src", goldUrl);
+                    summonedName_right = "Spider"
+                } else {
+                    model_left.setAttribute("src", goldUrl);
+                    summonedName_left = "Spider"
+                }
+
+
+            }
+            wasGoldInside = inside;
+        }
+
+        let wasCyanInside = false;
+        function toCyan() {
+            const inside = scene.components.hands.isPointOnEntity(8, cyanPanel);
+
+            if (summoned) return;
+
+            if (inside && wasCyanInside) {
+
+                if (right) {
+                    model_right.setAttribute("src", cyanUrl);
+                    summonedName_right = "Robot"
+                } else {
+                    model_left.setAttribute("src", cyanUrl);
+                    summonedName_left = "Robot"
+                }
+
+            }
+            wasCyanInside = inside;
+
+        }
+
+        let wasrightOrleftInside = false;
+        function torightOrleft() {
+            const inside = scene.components.hands.isPointOnEntity(8, torightOrleftPanel);
+
+            if (summoned) return;
+
+            if (inside && !wasrightOrleftInside) {
+                right = !right;
+
+                if (right) {
+                    rightOrleftText.setAttribute("value", "Right");
+                } else {
+                    rightOrleftText.setAttribute("value", "Left");
+                }
+            }
+
+            wasrightOrleftInside = inside;
+        }
+
+        let wasSummonInside = false;
+        async function toSummon() {
+            if (summoned) return;
+            const inside = scene.components.hands.isPointOnEntity(8, summonPanel);
+
+            if (inside && wasSummonInside) {
+
+                summoned = true;
+
+                //model_right 1.5 0.4 -3
+
+                model_right.setAttribute("position", `1.5 1 -3`);
+                model_right.setAttribute("rotation", `160 0 0`)
+
+                //model_left -1.5 0.4 -3
+
+                model_left.setAttribute("position", `-1.5 1 -3`);
+                model_left.setAttribute("rotation", `160 0 0`)
+
+                for (let Y = 1; Y > -0.7; Y = Y - 0.1) {
+                    await timeInterval(5);
+                    await model_right.setAttribute("position", `1.5 ${Y} -3`);
+                    await model_left.setAttribute("position", `-1.5 ${Y} -3`);
+                }
+
+                switch (summonedName_right) {
+                    case "Robot":
+                        summonRobot("right");
+                        break;
+                    case "Spider":
+                        summonSpider("right");
+                        break;
+                }
+
+                switch (summonedName_left) {
+                    case "Robot":
+                        summonRobot("left");
+                        break;
+                    case "Spider":
+                        summonSpider("left");
+                        break;
+                }
+
+            }
+            wasSummonInside = inside;
+
+        }
+
+        let wasReverseSummonInside = false;
+        async function toReverseSummon() {
+            if (!summoned) return;
+            const inside = scene.components.hands.isPointOnEntity(8, reverseSummonPanel);
+
+            if (inside && wasReverseSummonInside) {
+
+                summoned = false;
+
+                for (let Y = -0.7; Y < 1; Y = Y + 0.1) {
+                    await timeInterval(10);
+                    await model_right.setAttribute("position", `1.5 ${Y} -3`);
+                    await model_left.setAttribute("position", `-1.5 ${Y} -3`);
+                }
+
+                const reverseModel_right = document.getElementById("createdModel_right")
+                reverseModel_right.remove();
+                const reverseModel_left = document.getElementById("createdModel_left")
+                reverseModel_left.remove();
+
+                await timeInterval(1000);
+
+                await model_right.setAttribute("position", `1.5 0.4 -3`);
+                await model_right.setAttribute("rotation", `90 0 0`);
+
+                await model_left.setAttribute("position", `-1.5 0.4 -3`);
+                await model_left.setAttribute("rotation", `90 0 0`);
+
+            }
+            wasReverseSummonInside = inside;
+
+        }
+
+        let wasBattleInside = false;
+        let isBattling = false;
+        async function toBattle() {
+            if (!summoned) return;
+            if(isBattling) return;
+            const inside = scene.components.hands.isPointOnEntity(8, toBattlePanel);
+
+            if (inside && !wasBattleInside) {
+                isBattling = true;
+
+                //model_right 1.5 0.4 -3
+
+                summonedModel_right.setAttribute("rotation", `0 -90 0`)
+
+                //model_left -1.5 0.4 -3
+
+                summonedModel_left.setAttribute("rotation", `0 90 0`)
+
+                await timeInterval(1000);
+
+
+                //同種の戦いはなし
+                if (summonedName_right === summonedName_left) {
+                    await setAnimation(summonedModel_right, summonedName_right, "Jump");
+                    await setAnimation(summonedModel_left, summonedName_left, "Jump");
+
+                    await timeInterval("2000");
+
+                    summonedModel_right.setAttribute("rotation", `0 0 0`);
+                    setAnimation(summonedModel_right,summonedName_right,"Idle")
+
+                    summonedModel_left.setAttribute("rotation", `0 0 0`);
+                    setAnimation(summonedModel_left,summonedName_left,"Idle")
+
+                    isBattling = false;
+                } else {
+                    setAnimation(summonedModel_right, summonedName_right, "Attack");
+                    setAnimation(summonedModel_left, summonedName_left, "Attack");
+
+                    Battle();
+                }
+
+                
+            }
+            wasBattleInside = inside;
+
+        }
+
+        function setAnimation(target, targetName, animation) {
+            const robotAnimations = {
+                "Attack": "RobotArmature|Robot_Punch",
+                "Jump": "RobotArmature|Robot_Jump",
+                "Death": "RobotArmature|Robot_Death",
+                "Idle": "RobotArmature|Robot_Idle"
+            }
+
+            const spiderAnimations = {
+                "Attack": "SpiderArmature|Spider_Attack",
+                "Jump": "SpiderArmature|Spider_Jump",
+                "Death": "SpiderArmature|Spider_Death",
+                "Idle": "SpiderArmature|Spider_Idle",
+            }
+
+            if (animation === "Death") {
+                switch (targetName) {
+                    case "Robot":
+                        target.setAttribute(
+                            "animation-mixer",
+                            {
+                                clip: robotAnimations["Death"],
+                                loop: "once",
+                                clampWhenFinished: true
+                            });
+                        break;
+                    case "Spider":
+                        target.setAttribute(
+                            "animation-mixer",
+                            {
+                                clip: spiderAnimations["Death"],
+                                loop: "once",
+                                clampWhenFinished: true
+                            });
+                        break;
+                }
+
+            } else {
+                switch (targetName) {
+                    case "Robot":
+                        target.setAttribute(
+
+                            "animation-mixer",
+                            {
+                                clip: robotAnimations[animation]
+                            });
+
+                        break;
+                    case "Spider":
+                        target.setAttribute(
+
+                            "animation-mixer",
+                            {
+                                clip: spiderAnimations[animation]
+                            });
+
+                        break;
+                }
+
+            }
+
+        }
+
+        function timeInterval(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        /*<a-gltf-model id="model" class="clickable" src="robot.glb" position="0 0 0" scale="0.5 0.5 0.5"
+                    rotation="270 0 0" animation-mixer="clip:RobotArmature|Robot_Idle"></a-gltf-model>*/
+        function summonRobot(rightOrleft) {
+            if (rightOrleft === "right") {
+                const createdModel_right = document.createElement("a-gltf-model")
+                createdModel_right.setAttribute("id", "createdModel_right");
+                createdModel_right.setAttribute("src", "../../../assets/glbs/robot.glb");
+
+                createdModel_right.setAttribute("position", "1.5 -0.71 -3")
+
+                createdModel_right.setAttribute("scale", "0.5 0.5 0.5");
+                createdModel_right.setAttribute("rotation", "0 0 0")
+                createdModel_right.setAttribute("animation-mixer", "clip:RobotArmature|Robot_Idle")
+
+                scene.appendChild(createdModel_right);
+                summonedModel_right = createdModel_right;
+            } else {
+                const createdModel_left = document.createElement("a-gltf-model")
+                createdModel_left.setAttribute("id", "createdModel_left");
+                createdModel_left.setAttribute("src", "../../../assets/glbs/robot.glb");
+
+                createdModel_left.setAttribute("position", "-1.5 -0.71 -3")
+
+                createdModel_left.setAttribute("scale", "0.5 0.5 0.5");
+                createdModel_left.setAttribute("rotation", "0 0 0")
+                createdModel_left.setAttribute("animation-mixer", "clip:RobotArmature|Robot_Idle")
+
+                scene.appendChild(createdModel_left);
+                summonedModel_left = createdModel_left;
+            }
+
+        }
+
+        function summonSpider(rightOrleft) {
+            if (rightOrleft === "right") {
+                const createdModel_right = document.createElement("a-gltf-model")
+                createdModel_right.setAttribute("id", "createdModel_right");
+                createdModel_right.setAttribute("src", "../../../assets/glbs/spider.glb");
+
+                createdModel_right.setAttribute("position", "1.5 -0.71 -3")
+
+                createdModel_right.setAttribute("scale", "0.5 0.5 0.5");
+                createdModel_right.setAttribute("rotation", "0 0 0")
+                createdModel_right.setAttribute("animation-mixer", "clip:SpiderArmature|Spider_Idle")
+
+                scene.appendChild(createdModel_right);
+                summonedModel_right = createdModel_right;
+            } else {
+                const createdModel_left = document.createElement("a-gltf-model")
+                createdModel_left.setAttribute("id", "createdModel_left");
+                createdModel_left.setAttribute("src", "../../../assets/glbs/spider.glb");
+
+                createdModel_left.setAttribute("position", "-1.5 -0.71 -3")
+
+                createdModel_left.setAttribute("scale", "0.5 0.5 0.5");
+                createdModel_left.setAttribute("rotation", "0 0 0")
+                createdModel_left.setAttribute("animation-mixer", "clip:SpiderArmature|Spider_Idle")
+
+                scene.appendChild(createdModel_left);
+                summonedModel_left = createdModel_left;
+            }
+
+        }
+
+        //---------------------
+        //ここからバトルシステム関連
+        //---------------------
+        const hpText_right = document.getElementById("hpText-right");
+        const hpBar_right = document.getElementById("hpBar-right");
+
+        const hpText_left = document.getElementById("hpText-left");
+        const hpBar_left = document.getElementById("hpBar-left");
+
+        let robotPower = Math.floor(Math.random() * 10 + 1) + 2;
+        const Robot = {
+            "name": "Robot",
+            "hp": 150,
+            power: robotPower,
+        }
+
+        let spiderPower = Math.floor(Math.random() * 10 + 1) + 4.5;
+        const Spider = {
+            "name": "Spider",
+            "hp": 70,
+            power: spiderPower,
+        }
+
+        const defaultHp_Robot = 150;
+        const defaultHp_Spider = 70;
+
+        let rightSummoned = "";
+        let leftSummoned = "";
+
+        async function Battle() {
+            switch (summonedName_right) {
+                case "Robot":
+                    rightSummoned = Robot;
+                    break;
+
+                case "Spider":
+                    rightSummoned = Spider;
+
+                    break;
+            }
+            switch (summonedName_left) {
+                case "Robot":
+                    leftSummoned = Robot;
+                    break;
+
+                case "Spider":
+                    leftSummoned = Spider;
+
+                    break;
+            }
+
+            hpText_right.textContent = rightSummoned.name + ":" + rightSummoned.hp;
+            hpBar_right.setAttribute("value", rightSummoned.hp);
+            hpBar_right.setAttribute("max", rightSummoned.hp);
+
+            hpText_left.textContent = leftSummoned.name + ":" + rightSummoned.hp;
+            hpBar_left.setAttribute("value", leftSummoned.hp);
+            hpBar_left.setAttribute("max", leftSummoned.hp);
+
+            let Death = false;
+            while (true) {
+
+                await leftSummonedAttack();
+
+                if(rightSummoned.hp <= 0) {
+                    await leftSummonedWin();
+                    break; 
+                }
+
+                await timeInterval(1500);
+
+                await rightSummonedAttack();
+
+                if(leftSummoned.hp <= 0) {
+                    await rightSummonedWin();
+                    break;
+                }
+            }
+            async function leftSummonedAttack() {
+                rightSummoned.hp -= leftSummoned.power;
+                if (rightSummoned.hp <= 0) rightSummoned.hp = 0;
+                hpText_right.textContent = rightSummoned.name + ":" + rightSummoned.hp;
+                hpBar_right.setAttribute("value", rightSummoned.hp);
+            }
+
+            async function rightSummonedAttack() {
+                leftSummoned.hp -= rightSummoned.power;
+                if (leftSummoned.hp <= 0) leftSummoned.hp = 0;
+                hpText_left.textContent = leftSummoned.name + ":" + leftSummoned.hp;
+                hpBar_left.setAttribute("value", leftSummoned.hp);
+            }
+
+            async function leftSummonedWin() {
+                Death = true;
+                setAnimation(summonedModel_right, summonedName_right, "Death");
+                setAnimation(summonedModel_left, summonedName_left, "Jump");
+            }
+
+            async function rightSummonedWin() {
+                Death = true;
+                setAnimation(summonedModel_left, summonedName_left, "Death");
+                setAnimation(summonedModel_right, summonedName_right, "Jump")
+            }
+        }
+
+        function resetHp(){
+            switch(summonedName_right){
+                case "Robot":
+                    summonedModel_right.hp = defaultHp_Robot;
+                    break;
+                case "Spider":
+                    summonedModel_right.hp = defaultHp_Spider;
+                    break;
+            }
+            switch(summonedName_left){
+                case "Robot":
+                    summonedModel_left.hp = defaultHp_Robot;
+                    break;
+                case "Spider":
+                    summonedModel_left.hp = defaultHp_Spider;
+                    break;
+            }
+        }
+
+        scene.addEventListener("hand-result", toGold)
+        scene.addEventListener("hand-result", toCyan)
+        scene.addEventListener("hand-result", torightOrleft)
+        scene.addEventListener("hand-result", toSummon)
+        scene.addEventListener("hand-result", toReverseSummon)
+        scene.addEventListener("hand-result", toBattle)
+
+    </script>
+</body>
+
+</html>
