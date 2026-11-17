@@ -222,6 +222,8 @@
                 const reverseModel_left = document.getElementById("createdModel_left")
                 reverseModel_left.remove();
 
+                await resetHp();
+
                 await timeInterval(1000);
 
                 await model_right.setAttribute("position", `1.5 0.4 -3`);
@@ -430,7 +432,7 @@
             power: robotPower,
         }
 
-        let spiderPower = Math.floor(Math.random() * 10 + 1) + 4.5;
+        let spiderPower = Math.floor(Math.random() * 10 + 1) + 5;
         const Spider = {
             "name": "Spider",
             "hp": 70,
@@ -510,30 +512,32 @@
                 Death = true;
                 setAnimation(summonedModel_right, summonedName_right, "Death");
                 setAnimation(summonedModel_left, summonedName_left, "Jump");
+                isBattling = false;
             }
 
             async function rightSummonedWin() {
                 Death = true;
                 setAnimation(summonedModel_left, summonedName_left, "Death");
-                setAnimation(summonedModel_right, summonedName_right, "Jump")
+                setAnimation(summonedModel_right, summonedName_right, "Jump");
+                isBattling = false;
             }
         }
 
         function resetHp(){
             switch(summonedName_right){
                 case "Robot":
-                    summonedModel_right.hp = defaultHp_Robot;
+                    rightSummoned.hp = defaultHp_Robot;
                     break;
                 case "Spider":
-                    summonedModel_right.hp = defaultHp_Spider;
+                    rightSummoned.hp = defaultHp_Spider;
                     break;
             }
             switch(summonedName_left){
                 case "Robot":
-                    summonedModel_left.hp = defaultHp_Robot;
+                    leftSummoned.hp = defaultHp_Robot;
                     break;
                 case "Spider":
-                    summonedModel_left.hp = defaultHp_Spider;
+                    leftSummoned.hp = defaultHp_Spider;
                     break;
             }
         }
